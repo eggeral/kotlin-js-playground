@@ -1,4 +1,5 @@
 import java.io.File
+import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
 
 fun main(args: Array<String>) {
@@ -12,8 +13,16 @@ fun main(args: Array<String>) {
             };
             """
     )
-    nashorn.eval("load('${File("lost-type-info-in-inheritance-hierarchy/build/classes/main/lib/kotlin.js").canonicalPath}')")
-    nashorn.eval("load('${File("lost-type-info-in-inheritance-hierarchy/build/classes/main/lost-type-info-in-inheritance-hierarchy_main.js").canonicalPath}')")
 
+    evalFile(nashorn, "playground/build/classes/main/lib/kotlin.js")
+    evalFile(nashorn, "playground/build/classes/main/playground_main.js")
+}
+
+fun evalFile(nashorn: ScriptEngine, fileName: String) {
+    var file = File(fileName)
+    if (!file.exists()) {
+        file = File("../$fileName")
+    }
+    nashorn.eval("load('${file.canonicalPath}')")
 }
 
