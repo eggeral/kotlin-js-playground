@@ -1,0 +1,63 @@
+buildscript {
+    ext.kotlin_version = '1.0.2'
+
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'kotlin2js'
+
+def outDir = "${buildDir}/classes"
+
+compileKotlin2Js {
+    kotlinOptions.outputFile = "${outDir}/main/${project.name}_main.js"
+    kotlinOptions.metaInfo = true
+    kotlinOptions.suppressWarnings = false
+    kotlinOptions.version = true
+    kotlinOptions.verbose = true
+    kotlinOptions.sourceMap = true
+}
+
+compileTestKotlin2Js {
+    kotlinOptions.outputFile = "${outDir}/test/${project.name}_test.js"
+}
+
+dependencies {
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-js-library', version: kotlin_version
+}
+
+sourceSets {
+    // Needed for Gradle. Gradle Kotlin2JS does not include src/main/kotlin when building src/test/kotlin?
+    test.kotlin.srcDirs += "src/main/kotlin"
+}
+
+task copyJsFilesFromDependencies(type: Copy) {
+    from configurations.compile.collect {
+        it.isDirectory() ? it : zipTree(it)
+    }
+    into "${outDir}/main/lib/"
+    include { fileTreeElement ->
+        def path = fileTreeElement.path
+        path.endsWith(".js") && (path.startsWith("META-INF/resources/") || !path.startsWith("META-INF/"))
+    }
+}
+build.dependsOn copyJsFilesFromDependencies
+
+jar {
+    baseName "${project.name}"
+
+    from outDir
+    include "*.js"
+
+    manifest {
+        attributes(
+                "Kotlin-JS-Module-Name": "${project.name}"
+        )
+    }
+}
+
+classes.dependsOn compileKotlin2Js

@@ -1,0 +1,2 @@
+include ':runner'
+include ':lost-type-info-in-inheritance-hierarchy'
