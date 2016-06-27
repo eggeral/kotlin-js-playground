@@ -1,6 +1,15 @@
-enum class Foo { bar1, bar2 }
+abstract class Base {}
+
+class Derived : Base(), Comparable<Derived> {
+    override fun compareTo(other: Derived): Int {
+        throw UnsupportedOperationException("not implemented")
+    }
+}
 
 fun main(args: Array<String>) {
-    val bla : Any = Foo.bar1
-    println((bla as Comparable<Foo>).compareTo(Foo.bar1))
+    val bla: Any = Derived()
+    when {
+        bla is Base -> println("is Base")
+        else -> println("is not Base")
+    }
 }
